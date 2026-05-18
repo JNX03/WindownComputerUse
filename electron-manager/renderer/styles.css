@@ -1,0 +1,87 @@
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #0F172A; color: #E2E8F0;
+}
+body { display: grid; grid-template-columns: 200px 1fr; height: 100vh; }
+
+.sidebar {
+  background: #0B1220; border-right: 1px solid #1E293B;
+  display: flex; flex-direction: column;
+  padding: 16px 12px;
+}
+.brand { margin: 4px 8px 16px; color: #60A5FA; font-size: 18px; }
+nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.nav-item {
+  background: transparent; color: #94A3B8; border: none; text-align: left;
+  padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px;
+}
+.nav-item:hover { background: #1E293B; color: #E2E8F0; }
+.nav-item.active { background: #1E40AF; color: #fff; }
+.sidebar-footer { display: flex; align-items: center; gap: 8px; padding: 8px; font-size: 12px; color: #94A3B8; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-grey { background: #475569; }
+.dot-green { background: #22C55E; box-shadow: 0 0 8px #22C55E; }
+.dot-red { background: #EF4444; }
+
+main { overflow: auto; padding: 28px 32px; }
+.page { display: none; }
+.page.active { display: block; }
+h2 { margin: 0 0 16px; font-size: 22px; }
+h3 { margin: 16px 0 8px; font-size: 15px; color: #CBD5E1; }
+.hint { color: #64748B; font-size: 12px; margin-left: 8px; }
+
+.card-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+.card { background: #1E293B; padding: 14px; border-radius: 8px; }
+.card-label { color: #94A3B8; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+.card-value { font-size: 22px; font-weight: 600; margin: 6px 0 2px; }
+.card-meta { color: #94A3B8; font-size: 12px; }
+
+button {
+  background: #1E40AF; color: white; border: none;
+  padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+}
+button:hover { background: #2563EB; }
+button.ghost { background: transparent; color: #CBD5E1; border: 1px solid #334155; }
+button.ghost:hover { background: #1E293B; }
+button.danger { background: #DC2626; }
+button.danger:hover { background: #EF4444; }
+button.big { padding: 12px 22px; font-size: 15px; font-weight: 600; }
+
+.toggle-row { margin: 10px 0; display: flex; align-items: center; flex-wrap: wrap; }
+.toggle-row label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.field { margin: 12px 0; }
+.field label { display: block; margin-bottom: 4px; color: #94A3B8; font-size: 13px; }
+.field input[type=text], .field input:not([type]) {
+  background: #1E293B; border: 1px solid #334155; color: #E2E8F0;
+  padding: 6px 10px; border-radius: 6px; width: 320px;
+}
+input[type=range] { width: 320px; vertical-align: middle; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 12px; }
+.app-list { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow-y: auto; border: 1px solid #1E293B; border-radius: 6px; }
+.app-list li { padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1E293B; }
+.app-list li:last-child { border-bottom: none; }
+.app-list .remove { background: transparent; border: none; color: #94A3B8; cursor: pointer; }
+.app-list .remove:hover { color: #EF4444; }
+
+.add-form { display: flex; gap: 6px; margin-top: 8px; }
+.add-form input { flex: 1; background: #1E293B; border: 1px solid #334155; color: #E2E8F0; padding: 6px 10px; border-radius: 6px; }
+
+.activity-toolbar { display: flex; gap: 8px; margin-bottom: 10px; }
+.activity-toolbar input { flex: 1; background: #1E293B; border: 1px solid #334155; color: #E2E8F0; padding: 6px 10px; border-radius: 6px; }
+.activity-list {
+  background: #0B1220; border: 1px solid #1E293B; border-radius: 6px;
+  height: 480px; overflow-y: auto; font-family: 'Cascadia Mono', Consolas, monospace; font-size: 12px;
+}
+.activity-row { padding: 4px 10px; display: grid; grid-template-columns: 92px 1fr 60px; gap: 8px; border-bottom: 1px solid #111827; }
+.activity-row.fail { color: #FCA5A5; }
+.activity-row.ok { color: #86EFAC; }
+.activity-row .tool { color: #93C5FD; }
+.activity-row .ts { color: #64748B; }
+.activity-row .args { color: #CBD5E1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.activity-row .ms { color: #94A3B8; text-align: right; }
+
+code { background: #1E293B; padding: 2px 6px; border-radius: 4px; }
+a { color: #60A5FA; }

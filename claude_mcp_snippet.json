@@ -1,0 +1,10 @@
+{
+  "_comment": "Paste the win-computer-use block into your MCP config (~/.claude.json under 'mcpServers'). Replace REPLACE_WITH_REPO_PATH with the absolute path of this checkout. The 'command' should be a Python 3.10+ interpreter; on Windows the launcher 'py' usually works.",
+  "mcpServers": {
+    "win-computer-use": {
+      "command": "py",
+      "args": ["-3.12", "REPLACE_WITH_REPO_PATH\\server.py"],
+      "env": {}
+    }
+  }
+}

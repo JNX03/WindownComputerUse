@@ -1,0 +1,16 @@
+{
+  "bypass": false,
+  "allowed_apps": [
+    "mspaint.exe",
+    "msedge.exe",
+    "calc.exe",
+    "calculator.exe",
+    "explorer.exe",
+    "notepad.exe",
+    "SnippingTool.exe"
+  ],
+  "blocked_apps": [],
+  "max_screenshot_dim": 1920,
+  "mouse_move_duration_s": 0.15,
+  "fail_safe": true
+}

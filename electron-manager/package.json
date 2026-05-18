@@ -1,0 +1,27 @@
+{
+  "name": "win-computer-use-manager",
+  "version": "0.3.0",
+  "description": "Manager UI for the win-computer-use MCP server: permissions, cursor settings, live activity log, emergency stop.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:hidden": "electron . --hidden"
+  },
+  "author": "JNX03",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JNX03/win-computer-use"
+  },
+  "keywords": [
+    "mcp",
+    "claude",
+    "computer-use",
+    "windows",
+    "automation",
+    "electron"
+  ],
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}

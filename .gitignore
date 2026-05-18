@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual envs
+venv/
+.venv/
+env/
+.env
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# OS
+Thumbs.db
+ehthumbs.db
+.DS_Store
+Desktop.ini
+
+# Logs
+*.log
+
+# Project-local runtime artifacts
+# (real runtime state lives in %USERPROFILE%/.win_computer_use/ — not in the repo)
+verification/
+*.bak
+
+# Electron
+electron-manager/node_modules/
+electron-manager/dist/
+electron-manager/out/
+electron-manager/.npm/
+electron-manager/package-lock.json

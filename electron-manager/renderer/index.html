@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Win:Computer Use — Manager</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <h1 class="brand">Win:CU</h1>
+    <nav>
+      <button class="nav-item active" data-page="status">Status</button>
+      <button class="nav-item" data-page="permissions">Permissions</button>
+      <button class="nav-item" data-page="cursor">Cursor &amp; Agent</button>
+      <button class="nav-item" data-page="activity">Activity</button>
+      <button class="nav-item" data-page="about">About</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div id="server-dot" class="dot dot-grey" title="server status"></div>
+      <span id="server-state-text">unknown</span>
+    </div>
+  </aside>
+
+  <main>
+    <!-- Status -->
+    <section class="page active" data-page="status">
+      <h2>Status</h2>
+      <div class="card-row">
+        <div class="card">
+          <div class="card-label">Server</div>
+          <div id="server-status-big" class="card-value">—</div>
+          <div id="server-heartbeat" class="card-meta">no heartbeat yet</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Bypass mode</div>
+          <div id="bypass-big" class="card-value">—</div>
+          <div class="card-meta">if ON, AI can launch any app without asking</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Agent</div>
+          <div id="agent-big" class="card-value">—</div>
+          <div class="card-meta" id="last-action-meta">no action yet</div>
+        </div>
+      </div>
+      <button id="emergency-stop" class="danger big">EMERGENCY STOP</button>
+      <button id="emergency-resume" class="ghost" style="margin-left:8px">Resume</button>
+    </section>
+
+    <!-- Permissions -->
+    <section class="page" data-page="permissions">
+      <h2>Permissions</h2>
+      <div class="toggle-row">
+        <label>
+          <input id="bypass-toggle" type="checkbox" />
+          <span>Bypass mode (skip allowlist checks)</span>
+        </label>
+        <span class="hint">When ON, the AI can launch any app without your approval. Use only for autonomous demos.</span>
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Allowed apps</h3>
+          <ul id="allowed-list" class="app-list"></ul>
+          <form id="allowed-form" class="add-form">
+            <input id="allowed-input" placeholder="e.g. spotify.exe" />
+            <button>Add</button>
+          </form>
+        </div>
+        <div>
+          <h3>Blocked apps</h3>
+          <ul id="blocked-list" class="app-list"></ul>
+          <form id="blocked-form" class="add-form">
+            <input id="blocked-input" placeholder="e.g. taskmgr.exe" />
+            <button>Add</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cursor & Agent -->
+    <section class="page" data-page="cursor">
+      <h2>Cursor &amp; Agent</h2>
+      <div class="field">
+        <label>Agent name</label>
+        <input id="agent-input" placeholder="Claude" />
+      </div>
+      <div class="field">
+        <label>Cursor color</label>
+        <input id="color-input" type="color" value="#3B82F6" />
+        <span id="color-hex" class="hint">#3B82F6</span>
+      </div>
+      <div class="toggle-row">
+        <label><input id="overlay-toggle" type="checkbox" /> <span>Labeled-cursor overlay</span></label>
+      </div>
+      <div class="toggle-row">
+        <label><input id="showcase-toggle" type="checkbox" /> <span>Showcase mode (slower motion)</span></label>
+      </div>
+      <div class="field">
+        <label>Mouse move duration (s)</label>
+        <input id="speed-slider" type="range" min="0.05" max="2" step="0.05" />
+        <span id="speed-value" class="hint">0.6 s</span>
+      </div>
+      <div class="toggle-row">
+        <label><input id="autolaunch-toggle" type="checkbox" /> <span>Auto-launch this manager with Windows</span></label>
+        <span class="hint">Starts hidden in the system tray on login.</span>
+      </div>
+    </section>
+
+    <!-- Activity -->
+    <section class="page" data-page="activity">
+      <h2>Activity</h2>
+      <div class="activity-toolbar">
+        <input id="activity-search" placeholder="filter by tool name…" />
+        <button id="activity-pause">Pause</button>
+        <button id="activity-clear">Clear view</button>
+      </div>
+      <div id="activity-list" class="activity-list"></div>
+    </section>
+
+    <!-- About -->
+    <section class="page" data-page="about">
+      <h2>About</h2>
+      <p>Win:Computer Use — Manager v0.2.0</p>
+      <p>Manages permissions, cursor overlay, and activity for the <code>win-computer-use</code> MCP server.</p>
+      <p>Config: <code id="config-path"></code> <button class="ghost" id="open-config">Open folder</button></p>
+      <p>Source: <a href="#" id="github-link">github.com/JNX03/win-computer-use</a></p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
