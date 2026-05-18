@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / Usage help
+    url: https://github.com/JNX03/WindownComputerUse/discussions
+    about: Ask the community before opening an issue.
+  - name: Security vulnerability
+    url: https://github.com/JNX03/WindownComputerUse/blob/main/SECURITY.md
+    about: Please report security issues privately — do not open a public issue.

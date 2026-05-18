@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest a new tool, capability, or improvement
+title: "[feat]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: The user-facing problem, not the implementation.
+      placeholder: |
+        When my agent tries to drag a Paint canvas it ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: New tool? New flag? UI change in the Electron manager?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: This needs to be a new MCP tool
+        - label: This is a flag on an existing tool
+        - label: This is an Electron manager / overlay change
+        - label: This is documentation only

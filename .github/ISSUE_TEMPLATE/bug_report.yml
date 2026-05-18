@@ -1,0 +1,71 @@
+name: Bug report
+description: Something isn't working as expected
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug! The more detail, the faster a fix.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: Output of `git rev-parse --short HEAD`, or the release tag.
+      placeholder: 22649af
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows build
+      description: Run `winver` and paste the OS build, e.g. "Windows 11 23H2 build 22631.4317".
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      description: Output of `py -3.12 --version` (or whichever interpreter you registered).
+      placeholder: Python 3.12.7
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: MCP client
+      options:
+        - Claude Code
+        - Claude Desktop
+        - Codex
+        - OpenCode
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what did you get?
+      placeholder: |
+        I called `mouse_click(100, 200)` and ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: activity-log
+    attributes:
+      label: Relevant activity.log lines
+      description: Paste the JSONL lines for the failing tool call.
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, video, ideas for a fix, related issues.
