@@ -22,9 +22,24 @@ from typing import Any, Optional
 
 from . import permission
 
+import mmap
+import struct
+
 _lock = threading.Lock()
 
 STATE_PATH = permission.CONFIG_DIR / "state.json"
+CURSOR_POS_PATH = permission.CONFIG_DIR / "cursor_pos.bin"
+
+# Binary IPC for the high-frequency cursor stream. A 24-byte fixed record
+# (x:int32, y:int32, angle:float64, pressed:int32, version:int32) is mapped
+# into both the server and overlay processes via mmap. Writes are in-place
+# memcpys — no truncate, no encoding, no file locking — so the overlay never
+# catches an empty/partial record. The version counter lets a reader detect
+# a tear (writer mid-update) and retry.
+_CURSOR_FMT = "<iidii"
+_CURSOR_SIZE = struct.calcsize(_CURSOR_FMT)
+_mm_cursor: Optional["mmap.mmap"] = None
+_mm_lock = threading.Lock()
 
 DEFAULT_STATE: dict[str, Any] = {
     "agent_name": "Claude",
@@ -39,6 +54,7 @@ DEFAULT_STATE: dict[str, Any] = {
     # AI's virtual cursor — independent of the real Windows cursor.
     "virtual_cursor_x": 0,
     "virtual_cursor_y": 0,
+    "virtual_cursor_angle_rad": 0.0,
     # Set to true briefly when a real click/drag is happening so the overlay
     # can render a "pressed" pulse.
     "virtual_cursor_pressed": False,
@@ -138,11 +154,18 @@ def is_emergency() -> bool:
     return bool(load().get("emergency_stopped", False))
 
 
-def set_virtual_cursor(x: int, y: int, pressed: Optional[bool] = None) -> None:
+def set_virtual_cursor(x: int, y: int, pressed: Optional[bool] = None, angle_rad: Optional[float] = None) -> None:
     fields: dict[str, Any] = {"virtual_cursor_x": int(x), "virtual_cursor_y": int(y)}
     if pressed is not None:
         fields["virtual_cursor_pressed"] = bool(pressed)
+    if angle_rad is not None:
+        fields["virtual_cursor_angle_rad"] = float(angle_rad)
     patch(**fields)
+    # Also mirror into the lightweight position file so the overlay (which
+    # polls at ~25 Hz) always has a fresh, cheap-to-read value.
+    cur_angle = float(angle_rad) if angle_rad is not None else 0.0
+    cur_pressed = bool(pressed) if pressed is not None else False
+    write_cursor_pos(int(x), int(y), cur_angle, cur_pressed)
 
 
 def get_virtual_cursor() -> tuple[int, int]:
@@ -152,3 +175,78 @@ def get_virtual_cursor() -> tuple[int, int]:
 
 def set_pressed(on: bool) -> None:
     patch(virtual_cursor_pressed=bool(on))
+    # Refresh the pressed bit in the lightweight position file too so the
+    # overlay's pressed-ripple turns on/off without waiting for state.json.
+    pos = read_cursor_pos()
+    if pos is not None:
+        x, y, angle, _ = pos
+        write_cursor_pos(x, y, angle, bool(on))
+
+
+# ---- Lightweight, high-frequency cursor position channel -----------------
+#
+# During an animation we update the AI cursor position up to ~90 times per
+# second. Routing every one of those through state.json (atomic rename, retry
+# loop, contention with the overlay reader) was the dominant source of jitter.
+# Instead we keep a tiny plaintext side-file that's written with a single
+# Path.write_text — overlay reads it cheaply.
+
+def _cursor_mmap() -> Optional["mmap.mmap"]:
+    """Open (and cache) the shared cursor-position mmap region."""
+    global _mm_cursor
+    if _mm_cursor is not None:
+        return _mm_cursor
+    with _mm_lock:
+        if _mm_cursor is not None:
+            return _mm_cursor
+        try:
+            permission.CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+            if not CURSOR_POS_PATH.exists() or CURSOR_POS_PATH.stat().st_size < _CURSOR_SIZE:
+                # Pre-allocate the file at the exact record size.
+                with open(CURSOR_POS_PATH, "wb") as f:
+                    f.write(b"\x00" * _CURSOR_SIZE)
+            f = open(CURSOR_POS_PATH, "r+b")
+            _mm_cursor = mmap.mmap(f.fileno(), _CURSOR_SIZE)
+        except OSError:
+            _mm_cursor = None
+    return _mm_cursor
+
+
+_write_version = 0
+
+
+def write_cursor_pos(x: int, y: int, angle_rad: float, pressed: bool) -> None:
+    global _write_version
+    mm = _cursor_mmap()
+    if mm is None:
+        return
+    _write_version += 1
+    try:
+        struct.pack_into(
+            _CURSOR_FMT, mm, 0,
+            int(x), int(y), float(angle_rad), 1 if pressed else 0, int(_write_version),
+        )
+    except (ValueError, struct.error):
+        # If the buffer is somehow invalid, drop the frame rather than crash.
+        pass
+
+
+def read_cursor_pos() -> Optional[tuple[int, int, float, bool]]:
+    mm = _cursor_mmap()
+    if mm is None:
+        return None
+    # Tear-detection: read the version, the record, then re-read the version.
+    # If they differ, the writer updated mid-read — retry once. With mmap
+    # writes being a single struct.pack_into (~50ns memcpy), a tear is
+    # extremely rare, but the check is essentially free.
+    try:
+        x, y, ang, pressed, v1 = struct.unpack_from(_CURSOR_FMT, mm, 0)
+        x2, y2, ang2, pressed2, v2 = struct.unpack_from(_CURSOR_FMT, mm, 0)
+        if v1 != v2:
+            x, y, ang, pressed = x2, y2, ang2, pressed2
+    except (ValueError, struct.error):
+        return None
+    if v1 == 0 and v2 == 0 and x == 0 and y == 0:
+        # Region is zeroed (no write has happened yet).
+        return None
+    return int(x), int(y), float(ang), bool(pressed)

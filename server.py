@@ -73,17 +73,23 @@ def _start_overlay() -> None:
         CREATE_NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
         CREATE_NEW_PROCESS_GROUP = 0x00000200
         # If a standalone overlay is already running (its PID is in state.json
-        # and the process is alive), don't spawn a second one.
+        # and the process is alive), don't spawn a second one. Verify with
+        # GetExitCodeProcess — OpenProcess returns a handle for recently-exited
+        # PIDs too, so the old `if h:` check let stale PIDs block respawns and
+        # produced the "no cursor" bug.
         existing_pid = state.load().get("overlay_subprocess_pid")
         if existing_pid:
             try:
                 import ctypes as _c
                 h = _c.windll.kernel32.OpenProcess(0x1000, False, int(existing_pid))
                 if h:
+                    exit_code = _c.c_ulong(0)
+                    ok = _c.windll.kernel32.GetExitCodeProcess(h, _c.byref(exit_code))
                     _c.windll.kernel32.CloseHandle(h)
-                    print(f"[server] overlay already running (pid {existing_pid}), skipping spawn",
-                          file=sys.stderr)
-                    return
+                    if ok and exit_code.value == 259:  # STILL_ACTIVE
+                        print(f"[server] overlay already running (pid {existing_pid}), skipping spawn",
+                              file=sys.stderr)
+                        return
             except Exception:
                 pass
         _overlay_proc = subprocess.Popen(
@@ -232,10 +238,77 @@ def mouse_scroll(
     clicks: int,
     x: Optional[int] = None,
     y: Optional[int] = None,
+    duration_s: Optional[float] = None,
     use_real_cursor: bool = False,
 ) -> dict:
-    """Scroll the wheel. Positive = up, negative = down. use_real_cursor for apps that need a real wheel event."""
-    return mouse.mouse_scroll(clicks, x=x, y=y, use_real_cursor=use_real_cursor)
+    """Scroll the wheel. Positive = up, negative = down.
+
+    Pass duration_s to smooth the scroll over time (clicks delivered one tick
+    at a time). use_real_cursor=True for apps that need a real wheel event.
+    """
+    return mouse.mouse_scroll(clicks, x=x, y=y, duration_s=duration_s, use_real_cursor=use_real_cursor)
+
+
+@mcp.tool()
+def mouse_move_path(
+    points: list,
+    duration_s_per_segment: Optional[float] = None,
+) -> dict:
+    """Animate the AI cursor through a list of [x, y] waypoints.
+
+    Each segment uses the same spring + Bezier animation as mouse_move, so a
+    multi-point path produces a continuous string of smooth arcs — handy for
+    tracing gestures or visiting a sequence of UI targets in one tool call.
+    """
+    return mouse.mouse_move_path(points, duration_s_per_segment=duration_s_per_segment)
+
+
+@mcp.tool()
+def mouse_hover(
+    x: int,
+    y: int,
+    dwell_ms: int = 400,
+    duration_s: Optional[float] = None,
+) -> dict:
+    """Move to (x, y) and dwell for dwell_ms — triggers tooltips and hover UI."""
+    return mouse.mouse_hover(x, y, dwell_ms=dwell_ms, duration_s=duration_s)
+
+
+@mcp.tool()
+def mouse_down(
+    x: Optional[int] = None,
+    y: Optional[int] = None,
+    button: str = "left",
+    duration_s: Optional[float] = None,
+    use_real_cursor: bool = False,
+) -> dict:
+    """Press a mouse button without releasing it. Pair with mouse_up for custom
+    drag patterns or hold-while-typing flows.
+
+    PostMessage by default (real cursor untouched). Pass use_real_cursor=True
+    for apps that ignore synthetic input — the real cursor will stay at the
+    target until mouse_up is called (use the real_pos_before value returned
+    here to restore it)."""
+    return mouse.mouse_down(
+        x=x, y=y, button=button, duration_s=duration_s, use_real_cursor=use_real_cursor,
+    )
+
+
+@mcp.tool()
+def mouse_up(
+    x: Optional[int] = None,
+    y: Optional[int] = None,
+    button: str = "left",
+    use_real_cursor: bool = False,
+    real_pos_before: Optional[list] = None,
+) -> dict:
+    """Release a previously pressed mouse button. If use_real_cursor was true
+    on mouse_down, pass the same real_pos_before list back to restore the
+    user's cursor."""
+    return mouse.mouse_up(
+        x=x, y=y, button=button, use_real_cursor=use_real_cursor,
+        real_pos_before=real_pos_before,
+    )
 
 
 # ---- Keyboard --------------------------------------------------------------
