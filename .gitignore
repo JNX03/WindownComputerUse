@@ -49,6 +49,9 @@ Desktop.ini
 verification/
 *.bak
 
+# Claude Code agent memory (local, not for distribution)
+memory/
+
 # Electron
 electron-manager/node_modules/
 electron-manager/dist/

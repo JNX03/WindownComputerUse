@@ -1,5 +1,15 @@
 # Win:Computer Use
 
+> **MCP server that gives Claude (and other MCP clients) human-like control of a Windows PC — with its own virtual cursor, an emergency stop, and a manager UI.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)](https://learn.microsoft.com/windows/)
+[![MCP](https://img.shields.io/badge/MCP-stdio-7C3AED)](https://modelcontextprotocol.io/)
+[![CI](https://github.com/JNX03/WindownComputerUse/actions/workflows/ci.yml/badge.svg)](https://github.com/JNX03/WindownComputerUse/actions/workflows/ci.yml)
+[![GitHub stars](https://img.shields.io/github/stars/JNX03/WindownComputerUse?style=social)](https://github.com/JNX03/WindownComputerUse/stargazers)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 An MCP (Model Context Protocol) server that gives any MCP-capable AI client — Claude Code, Claude Desktop, custom agents, etc. — human-like control of a Windows machine.
 
 **64 tools** covering mouse, keyboard, screen capture, OCR, window/app management, file I/O, HTTP, processes, audio, and a labeled on-screen cursor so you can see what the AI is doing.
@@ -7,6 +17,36 @@ An MCP (Model Context Protocol) server that gives any MCP-capable AI client — 
 The AI gets its own **independent virtual cursor** rendered as an always-on-top labeled overlay (an arrow + agent-name chip). Clicks default to `PostMessage`, so your real Windows cursor is never touched while the AI is working — you can keep using your machine alongside it.
 
 A bundled **Electron manager app** lets you edit permissions, change the cursor color / agent name / motion speed, watch a live activity log, and trigger an emergency stop, without ever opening a JSON file.
+
+## Table of contents
+
+- [Why](#why)
+- [Highlights](#highlights)
+- [Demo](#demo)
+- [Requirements](#requirements)
+- [Install — the easy way (recommended)](#install--the-easy-way-recommended)
+- [Install — manual](#install--manual)
+- [Configuration](#configuration)
+- [Tools](#tools)
+- [How an agent typically uses it](#how-an-agent-typically-uses-it)
+- [Caveats](#caveats)
+- [Project layout](#project-layout)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
+
+## Demo
+
+<!-- Drop a screenshot or GIF at docs/demo.gif and uncomment:
+![Win:Computer Use demo](docs/demo.gif)
+-->
+
+A quick tour:
+
+1. Launch the Electron manager — `setup.bat` walks you through Python + deps + client registration.
+2. Start your MCP client (Claude Code, Claude Desktop). The server boots; the labeled overlay cursor appears.
+3. Ask the model: *"Open Paint, draw a smiley face, save it to my desktop."* You'll see the arrow cursor (carrying its agent-name chip) glide along Bezier curves, click via `PostMessage`, and announce every tool call in the Activity panel.
+4. Press `Ctrl+Shift+X` at any time to freeze input until you resume.
 
 ---
 
@@ -218,12 +258,12 @@ README.md
 
 ## Contributing
 
-Issues and PRs welcome. A few ground rules:
+Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the ground rules and dev setup. Code of conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
-- Keep tools small and composable. The AI composes them.
-- Tools that move the cursor or click MUST default to PostMessage. Add `use_real_cursor: bool = False` if a real-cursor fallback is needed.
-- New tools must pass through `@announced(...)` so they appear in the activity log.
+## Security
+
+Found a security issue? Please **don't** open a public issue — see [SECURITY.md](SECURITY.md) for how to report it.
 
 ## License
 
-MIT — see `LICENSE`.
+MIT — see [LICENSE](LICENSE).
