@@ -1,0 +1,44 @@
+{
+  "_comment_top": "Reference: the schema of ~/.win_computer_use/config.json. The MCP server seeds this file on first run from config.default.json at the repo root. The agent can read/modify these fields at runtime via the tools noted in inline comments.",
+
+  "bypass": false,
+  "_comment_bypass": "If true, the AI may launch any executable without the allowlist gate. Toggle at runtime via permission_set_bypass(enabled). Restore to false at session end.",
+
+  "allowed_apps": [
+    "mspaint.exe",
+    "msedge.exe",
+    "calc.exe",
+    "calculator.exe",
+    "explorer.exe",
+    "notepad.exe",
+    "SnippingTool.exe"
+  ],
+  "_comment_allowed_apps": "Exe basenames (case-insensitive) the AI may launch when bypass=false. Add at runtime via permission_add_allowed_app(app_name).",
+
+  "blocked_apps": [],
+  "_comment_blocked_apps": "Exe basenames the AI is never allowed to launch, even with bypass=true. Hard-coded refusal.",
+
+  "max_screenshot_dim": 1920,
+  "_comment_max_screenshot_dim": "Largest dimension (px) returned by screenshot tools. Larger captures are scaled down. Lower this if you hit token caps frequently.",
+
+  "mouse_move_duration_s": 0.6,
+  "_comment_mouse_move_duration_s": "Default virtual-cursor animation time in seconds. Settable at runtime via set_speed(duration_s).",
+
+  "fail_safe": true,
+  "_comment_fail_safe": "Maps to pyautogui.FAILSAFE. If the real cursor reaches a screen corner, the next call aborts. DO NOT DISABLE.",
+
+  "agent_name": "Claude",
+  "_comment_agent_name": "Label shown next to the overlay cursor. Settable at runtime via set_agent_name(name).",
+
+  "cursor_color": "#3B82F6",
+  "_comment_cursor_color": "Overlay ring color (hex). Settable at runtime via set_cursor_color(hex_color).",
+
+  "overlay_enabled": true,
+  "_comment_overlay_enabled": "Whether the labeled overlay cursor is shown. Settable at runtime via overlay_show(on). DO NOT TURN OFF without telling the user - it is their only live signal.",
+
+  "showcase_mode": true,
+  "_comment_showcase_mode": "Slow watchable motion. Settable at runtime via set_showcase_mode(on). Recommended on when a human is watching.",
+
+  "emergency_hotkey": "ctrl+shift+x",
+  "_comment_emergency_hotkey": "Global panic hotkey. When pressed, freezes all input-bearing tools until emergency_resume() is called."
+}
