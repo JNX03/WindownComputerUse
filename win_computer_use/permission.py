@@ -21,15 +21,28 @@ DEFAULT_CONFIG = {
     ],
     "blocked_apps": [],
     "max_screenshot_dim": 1920,
-    "mouse_move_duration_s": 0.6,
+    "mouse_move_duration_s": 0.25,
     "fail_safe": True,
     # Phase 2 — visibility & UX
     "agent_name": "Claude",
-    "cursor_color": "#3B82F6",
+    "cursor_color": "#FE6E58",
     "cursor_label_text_color": "#FFFFFF",
     "overlay_enabled": True,
     "showcase_mode": True,
     "emergency_hotkey": "ctrl+shift+x",
+    # Phase 4 — polish
+    # Two-stage fade:
+    # - Chip ("Claude" label) starts fading after `label_hide_after_s` seconds
+    #   of stillness, finishes hiding `fade_duration_s` later.
+    # - The arrow itself starts shrinking + fading after
+    #   `cursor_auto_hide_after_s` seconds, finishes `fade_duration_s` later.
+    # - On any AI cursor motion both elements wake back up.
+    "label_hide_after_s": 5.0,
+    "cursor_auto_hide_after_s": 15.0,
+    "cursor_fade_duration_s": 1.5,
+    "cursor_wake_duration_s": 0.4,
+    "app_theme": "dark",
+    "app_default_page": "setup",
 }
 
 

@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mouse Arc Simulation</title>
+<style>
+  :root{
+    --pink:#ff3d8b;
+    --pink-soft:#ffb4d1;
+    --track:rgba(255,255,255,0.35);
+  }
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;font-family:'Helvetica Neue',Arial,sans-serif;}
+  body{
+    background:
+      radial-gradient(1100px 800px at 25% 35%, #ffd4e3 0%, transparent 60%),
+      radial-gradient(900px 700px at 75% 65%, #ffb6cf 0%, transparent 55%),
+      radial-gradient(1200px 900px at 50% 50%, #f4a8c8 0%, #e986b3 60%, #c970a2 100%);
+    cursor:crosshair;
+    user-select:none;
+  }
+  canvas#trail{position:fixed;inset:0;display:block;}
+  #cursor{
+    position:fixed;
+    left:0;top:0;
+    width:26px;height:26px;
+    margin-left:-3px;margin-top:-3px;     /* hotspot near tip */
+    pointer-events:none;
+    will-change:transform;
+    transform:translate(50vw,50vh) rotate(0rad);
+    z-index:5;
+  }
+  #cursor svg{display:block;width:100%;height:100%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4));}
+  #panel{
+    position:fixed;
+    top:18px;left:18px;
+    padding:14px 18px 16px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    border-radius:10px;
+    z-index:10;
+    width:300px;
+    color:rgba(255,255,255,0.85);
+    letter-spacing:.15em;
+    font-size:11px;
+    font-weight:600;
+  }
+  .row{display:flex;align-items:center;gap:14px;margin:6px 0;}
+  .row label{flex:0 0 auto;min-width:108px;text-transform:uppercase;opacity:.85;}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    flex:1 1 auto;height:6px;background:transparent;outline:none;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:4px;border-radius:2px;
+    background:linear-gradient(to right,var(--pink) 0 var(--fill,50%),var(--track) var(--fill,50%) 100%);
+  }
+  input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--track);}
+  input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--pink);}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;
+    background:#fff;border:none;margin-top:-5px;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;
+    background:#fff;border:none;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer;
+  }
+  #hint{
+    position:fixed;bottom:18px;left:18px;z-index:10;
+    color:rgba(255,255,255,0.7);
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  }
+</style>
+</head>
+<body>
+<canvas id="trail"></canvas>
+
+<div id="panel">
+  <div class="row"><input id="s-start"  type="range" min="0"    max="1" step="0.001" value="0.40"><label>Start Handle</label></div>
+  <div class="row"><input id="s-end"    type="range" min="0"    max="1" step="0.001" value="0.20"><label>End Handle</label></div>
+  <div class="row"><input id="s-size"   type="range" min="0"    max="1" step="0.001" value="0.45"><label>Arc Size</label></div>
+  <div class="row"><input id="s-flow"   type="range" min="-1"   max="1" step="0.001" value="0.60"><label>Arc Flow</label></div>
+  <div class="row"><input id="s-spring" type="range" min="0"    max="1" step="0.001" value="0.55"><label>Spring</label></div>
+</div>
+
+<!-- The cursor sprite. Designed so its TIP is at (0,0) of the SVG; rest pose is up-left like a normal OS cursor. -->
+<div id="cursor">
+  <svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
+    <!-- classic arrow: tip at top-left, body slants down-right -->
+    <polygon points="1,1 1,18 6,14 9,22 13,20 10,12 17,12"
+             fill="#1a1a1a" stroke="rgba(255,255,255,0.75)" stroke-width="0.8" stroke-linejoin="round"/>
+  </svg>
+</div>
+
+<div id="hint">click anywhere</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('trail');
+  const ctx    = canvas.getContext('2d');
+  const cursor = document.getElementById('cursor');
+
+  const sliders = {
+    start : document.getElementById('s-start'),
+    end   : document.getElementById('s-end'),
+    size  : document.getElementById('s-size'),
+    flow  : document.getElementById('s-flow'),
+    spring: document.getElementById('s-spring'),
+  };
+
+  function paintSlider(el){
+    const min = +el.min, max = +el.max;
+    const pct = ((+el.value - min) / (max - min)) * 100;
+    el.style.setProperty('--fill', pct + '%');
+  }
+  Object.values(sliders).forEach(s => {
+    paintSlider(s);
+    s.addEventListener('input', () => paintSlider(s));
+  });
+
+  // --- canvas sizing ---
+  let DPR = Math.max(1, window.devicePixelRatio || 1);
+  function resize(){
+    DPR = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width  = Math.floor(innerWidth  * DPR);
+    canvas.height = Math.floor(innerHeight * DPR);
+    canvas.style.width  = innerWidth + 'px';
+    canvas.style.height = innerHeight + 'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  // The arrow SVG is drawn with its tip already pointing UP-LEFT visually.
+  // So at rotation = 0, the cursor already looks like a normal idle OS cursor.
+  // Direction of "natural motion forward" = up-left = atan2(-1,-1) = -3π/4.
+  // We want the cursor's "forward" to align with its velocity vector.
+  // Hence: drawn-rotation = movementAngle - RESTING_FORWARD.
+  const RESTING_FORWARD = -Math.PI * 3/4;  // up-left in screen coords
+  const REST_ANGLE       = 0;              // visual rotation applied at idle (identity)
+
+  // --- state ---
+  const VARIANT_COUNT = 7;
+  const state = {
+    pos    : { x: innerWidth/2, y: innerHeight/2 },
+    angle  : REST_ANGLE,        // currently-rendered rotation
+    moving : false,
+    t      : 1,
+    tVel   : 0,
+    variants : [],              // each: {P0,P1,P2,P3,lastDraw}
+    settleAngle : false,        // true while easing rotation back to rest after motion
+  };
+
+  // bezier helpers
+  function bezier(P0,P1,P2,P3,t){
+    const it = 1 - t;
+    const b0 = it*it*it, b1 = 3*it*it*t, b2 = 3*it*t*t, b3 = t*t*t;
+    return {
+      x: P0.x*b0 + P1.x*b1 + P2.x*b2 + P3.x*b3,
+      y: P0.y*b0 + P1.y*b1 + P2.y*b2 + P3.y*b3,
+    };
+  }
+  function bezierDeriv(P0,P1,P2,P3,t){
+    const it = 1 - t;
+    return {
+      x: 3*it*it*(P1.x-P0.x) + 6*it*t*(P2.x-P1.x) + 3*t*t*(P3.x-P2.x),
+      y: 3*it*it*(P1.y-P0.y) + 6*it*t*(P2.y-P1.y) + 3*t*t*(P3.y-P2.y),
+    };
+  }
+
+  // Build fan of N bezier variants from current pos -> target click.
+  // Slight handle perturbation per variant gives the overlapping-arcs look.
+  function planTo(target){
+    const P0src = { x: state.pos.x, y: state.pos.y };
+    const P3    = { x: target.x,    y: target.y    };
+    const dx = P3.x - P0src.x, dy = P3.y - P0src.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const ux = dx / dist, uy = dy / dist;
+    const px = -uy,       py = ux;        // perpendicular
+
+    const sStart = +sliders.start.value;
+    const sEnd   = +sliders.end.value;
+    const sSize  = +sliders.size.value;
+    const sFlow  = +sliders.flow.value;
+
+    state.variants = [];
+    for (let i = 0; i < VARIANT_COUNT; i++){
+      // jitter each variant's handle positions and curvature
+      const jitterStart = (Math.random() - 0.5) * 0.12;
+      const jitterEnd   = (Math.random() - 0.5) * 0.12;
+      const sizeMul     = 0.65 + Math.random() * 0.75;
+      const flowMul     = 0.7  + Math.random() * 0.6;
+      const flowSign    = sFlow >= 0 ? 1 : -1;
+      const sFlowAbs    = Math.abs(sFlow);
+
+      const arc = sSize * dist * 0.9 * sizeMul;
+
+      const a1x = P0src.x + ux * dist * Math.max(0.05, sStart + jitterStart);
+      const a1y = P0src.y + uy * dist * Math.max(0.05, sStart + jitterStart);
+      const a2x = P0src.x + ux * dist * Math.min(0.95, (1 - sEnd) + jitterEnd);
+      const a2y = P0src.y + uy * dist * Math.min(0.95, (1 - sEnd) + jitterEnd);
+
+      const off1 = arc * sFlowAbs * flowMul * flowSign;
+      const off2 = arc * sFlowAbs * flowMul * flowSign * (0.4 + Math.random() * 0.5);
+
+      state.variants.push({
+        P0: P0src,
+        P1: { x: a1x + px * off1, y: a1y + py * off1 },
+        P2: { x: a2x + px * off2, y: a2y + py * off2 },
+        P3,
+        lastDraw: { x: P0src.x, y: P0src.y },
+      });
+    }
+
+    state.t       = 0;
+    state.tVel    = 0;
+    state.moving  = true;
+    state.settleAngle = false;
+  }
+
+  // spring: maps slider 0..1 -> stiffness ~40..420, damping slightly under-critical (subtle overshoot)
+  function springParams(){
+    const s = +sliders.spring.value;
+    const k = 40 + s * 380;
+    const d = 2 * Math.sqrt(k) * 0.82;
+    return { k, d };
+  }
+
+  // shortest-arc rotation interpolation
+  function easeAngle(current, target, rate, dt){
+    let diff = target - current;
+    while (diff >  Math.PI) diff -= 2*Math.PI;
+    while (diff < -Math.PI) diff += 2*Math.PI;
+    return current + diff * Math.min(1, dt * rate);
+  }
+
+  // --- animation loop ---
+  let lastTs = performance.now();
+  function frame(ts){
+    let dt = (ts - lastTs) / 1000;
+    if (dt > 0.05) dt = 0.05;
+    lastTs = ts;
+
+    // subtle fade of trail (lets arcs accumulate and gradually wash out)
+    ctx.fillStyle = 'rgba(0,0,0,0.012)';
+    ctx.fillRect(0,0,innerWidth,innerHeight);
+
+    if (state.moving){
+      const { k, d } = springParams();
+      const a = k * (1 - state.t) - d * state.tVel;
+      state.tVel += a * dt;
+      state.t    += state.tVel * dt;
+
+      // arrival check
+      if (state.t >= 0.998 && Math.abs(state.tVel) < 0.06){
+        state.t = 1;
+        state.tVel = 0;
+        state.moving = false;
+        state.settleAngle = true;     // start easing rotation back to rest
+      }
+
+      const tEval = Math.max(0, Math.min(1.04, state.t));
+
+      // draw all variant arcs up to current t (this is what creates the fan of lines)
+      for (let i = 0; i < state.variants.length; i++){
+        const v = state.variants[i];
+        const p = bezier(v.P0, v.P1, v.P2, v.P3, tEval);
+        // slightly varying alpha per variant for depth
+        const a = 0.22 + (i / state.variants.length) * 0.25;
+        ctx.strokeStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+        ctx.lineWidth = 0.9 + (i % 2) * 0.4;
+        ctx.beginPath();
+        ctx.moveTo(v.lastDraw.x, v.lastDraw.y);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        v.lastDraw = p;
+      }
+
+      // main cursor follows variant 0, with human-like tremor
+      const main = state.variants[0];
+      const p    = bezier(main.P0, main.P1, main.P2, main.P3, tEval);
+      const tan  = bezierDeriv(main.P0, main.P1, main.P2, main.P3, Math.min(1, tEval));
+
+      // tremor: small high-freq noise + a tiny lateral wobble; vanishes near the end
+      const remaining = Math.max(0, 1 - state.t);
+      const speed     = Math.hypot(tan.x, tan.y);
+      const tremorAmp = Math.min(2.0, 0.4 + speed * 0.0035) * Math.min(1, remaining * 1.6);
+      const wobble    = Math.sin(ts * 0.022 + state.variants.length) * 0.6 * remaining;
+      // perpendicular unit (screen-space)
+      const ts2 = speed > 0.0001 ? { x: -tan.y/speed, y: tan.x/speed } : { x:0, y:0 };
+      const jx = (Math.random() - 0.5) * tremorAmp + ts2.x * wobble;
+      const jy = (Math.random() - 0.5) * tremorAmp + ts2.y * wobble;
+
+      state.pos.x = p.x + jx;
+      state.pos.y = p.y + jy;
+
+      // rotate cursor to face direction of motion (relative to its drawn forward = up-left)
+      const moveAngle  = Math.atan2(tan.y, tan.x);
+      const targetRot  = moveAngle - RESTING_FORWARD;
+      state.angle      = easeAngle(state.angle, targetRot, 18, dt);
+    } else {
+      // idle: ease rotation back to the default OS-cursor orientation
+      if (state.settleAngle){
+        const before = state.angle;
+        state.angle = easeAngle(state.angle, REST_ANGLE, 6, dt);
+        // when essentially there, stop bothering
+        let diff = REST_ANGLE - state.angle;
+        while (diff >  Math.PI) diff -= 2*Math.PI;
+        while (diff < -Math.PI) diff += 2*Math.PI;
+        if (Math.abs(diff) < 0.005) {
+          state.angle = REST_ANGLE;
+          state.settleAngle = false;
+        }
+      }
+    }
+
+    cursor.style.transform =
+      `translate(${state.pos.x}px, ${state.pos.y}px) rotate(${state.angle}rad)`;
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // --- input ---
+  addEventListener('mousedown', e => {
+    if (e.target.closest('#panel')) return;
+    planTo({ x: e.clientX, y: e.clientY });
+  });
+  addEventListener('touchstart', e => {
+    if (e.target.closest('#panel')) return;
+    const t = e.touches[0];
+    if (!t) return;
+    planTo({ x: t.clientX, y: t.clientY });
+  }, { passive:true });
+})();
+</script>
+</body>
+</html>

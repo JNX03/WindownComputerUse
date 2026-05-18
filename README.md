@@ -32,20 +32,37 @@ Anthropic ships a "computer use" tool for macOS / Linux containers but nothing t
 - An MCP-capable client (Claude Code, Claude Desktop, etc.).
 - For the Electron manager: Node.js 18+.
 
-## Install
+## Install — the easy way (recommended)
 
 ```powershell
-cd path\to\win-computer-use
-.\install.ps1
+git clone https://github.com/JNX03/win-computer-use
+cd win-computer-use
+./setup.bat        # or: ./setup.ps1
 ```
 
-The installer:
-1. Picks a Python 3.10+ interpreter (prefers `py -3.12`).
-2. `pip install -r requirements.txt`.
-3. Seeds default config at `%USERPROFILE%\.win_computer_use\config.json`.
-4. If the `claude` CLI is on PATH, runs `claude mcp add win-computer-use ... --scope user`. Otherwise prints the JSON to paste manually.
+Double-click `setup.bat` and the **Setup wizard** in the Electron manager walks you through it:
 
-Restart your MCP client so it picks up the new server.
+1. **Python 3.10+** — auto-detects `py -3.12`, `py -3`, `python`, or `python3` on your PATH; shows the resolved interpreter.
+2. **Python dependencies** — one click runs `pip install -r requirements.txt` with live output.
+3. **Configure your AI client** — pick a tab and click *Copy*:
+   - **Claude Code**: one-click *"Register with Claude Code now"* if the `claude` CLI is on PATH, otherwise a JSON snippet for `~/.claude.json`.
+   - **Claude Desktop**: JSON for `%APPDATA%\Claude\claude_desktop_config.json`.
+   - **Codex**: TOML for `~/.codex/config.toml`.
+   - **OpenCode**: JSON for `~/.config/opencode/opencode.json`.
+   - **Generic / JSON**: the standard MCP stdio entry for any other client.
+4. **Cursor overlay (optional)** — one click launches the standalone arrow cursor.
+
+Only Node.js 18+ is required up front; the wizard handles Python + deps + MCP registration itself.
+
+### Install — manual
+
+If you'd rather not run Electron:
+
+```powershell
+./install.ps1
+```
+
+This picks Python 3.10+, runs `pip install`, seeds config, and registers with Claude Code via `claude mcp add` if the CLI is on PATH.
 
 ### Manual MCP registration
 
@@ -64,21 +81,20 @@ Paste the contents of `claude_mcp_snippet.json` into your client's MCP config an
 
 ### Launch the cursor overlay
 
-The MCP server spawns the overlay automatically when it starts. To keep an overlay alive across MCP server lifecycles (useful when running short `claude -p` commands), launch a standalone overlay:
+The MCP server spawns the overlay automatically when it starts. To keep an overlay alive across MCP server lifecycles (useful for short `claude -p` runs), launch a standalone overlay — or just press the button on the Setup page:
 
 ```powershell
 py -3.12 -m win_computer_use.overlay --standalone
 ```
 
-### Launch the Electron manager
+### Re-launch the manager later
 
 ```powershell
 cd electron-manager
-npm install
 npm start
 ```
 
-You can also enable auto-launch with Windows from inside the manager's "Cursor & Agent" page (uses Electron's `setLoginItemSettings`).
+Or enable auto-launch with Windows on the Cursor & Agent page (uses Electron's `setLoginItemSettings`).
 
 ## Configuration
 

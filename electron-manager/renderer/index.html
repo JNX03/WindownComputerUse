@@ -1,131 +1,433 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Win:Computer Use — Manager</title>
+  <title>win-computer-use — Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <aside class="sidebar">
-    <h1 class="brand">Win:CU</h1>
-    <nav>
-      <button class="nav-item active" data-page="status">Status</button>
-      <button class="nav-item" data-page="permissions">Permissions</button>
-      <button class="nav-item" data-page="cursor">Cursor &amp; Agent</button>
-      <button class="nav-item" data-page="activity">Activity</button>
-      <button class="nav-item" data-page="about">About</button>
-    </nav>
-    <div class="sidebar-footer">
-      <div id="server-dot" class="dot dot-grey" title="server status"></div>
-      <span id="server-state-text">unknown</span>
+  <!-- Top status bar — narrow, monospaced, terminal-y -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="brand-mark">▣</span>
+      <span class="brand-name">win-computer-use</span>
+      <span class="brand-version">v0.3</span>
     </div>
-  </aside>
+    <div class="topbar-status">
+      <span class="status-pill" id="topbar-server-pill">
+        <span class="status-dot" id="topbar-server-dot"></span>
+        <span id="topbar-server-text">connecting…</span>
+      </span>
+      <span class="status-pill" id="topbar-bypass-pill">
+        <span class="status-dot dot-warn"></span>
+        <span id="topbar-bypass-text">bypass: off</span>
+      </span>
+      <button class="icon-btn" id="theme-toggle" title="Toggle theme">
+        <svg class="ic-sun" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <line x1="12" y1="2.5" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="21.5"/>
+            <line x1="2.5" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="21.5" y2="12"/>
+            <line x1="5.2" y1="5.2" x2="6.9" y2="6.9"/><line x1="17.1" y1="17.1" x2="18.8" y2="18.8"/>
+            <line x1="5.2" y1="18.8" x2="6.9" y2="17.1"/><line x1="17.1" y1="6.9" x2="18.8" y2="5.2"/>
+          </g>
+        </svg>
+        <svg class="ic-moon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M20 14.5A8 8 0 1 1 9.5 4a1 1 0 0 1 1 1.4A6 6 0 0 0 18.6 13.5a1 1 0 0 1 1.4 1Z"
+                fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-  <main>
-    <!-- Status -->
-    <section class="page active" data-page="status">
-      <h2>Status</h2>
-      <div class="card-row">
-        <div class="card">
-          <div class="card-label">Server</div>
-          <div id="server-status-big" class="card-value">—</div>
-          <div id="server-heartbeat" class="card-meta">no heartbeat yet</div>
-        </div>
-        <div class="card">
-          <div class="card-label">Bypass mode</div>
-          <div id="bypass-big" class="card-value">—</div>
-          <div class="card-meta">if ON, AI can launch any app without asking</div>
-        </div>
-        <div class="card">
-          <div class="card-label">Agent</div>
-          <div id="agent-big" class="card-value">—</div>
-          <div class="card-meta" id="last-action-meta">no action yet</div>
-        </div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <nav class="sidenav">
+        <button class="navlink active" data-page="setup">
+          <span class="navlink-idx">01</span>
+          <span class="navlink-label">Setup</span>
+        </button>
+        <button class="navlink" data-page="status">
+          <span class="navlink-idx">02</span>
+          <span class="navlink-label">Status</span>
+        </button>
+        <button class="navlink" data-page="permissions">
+          <span class="navlink-idx">03</span>
+          <span class="navlink-label">Permissions</span>
+        </button>
+        <button class="navlink" data-page="cursor">
+          <span class="navlink-idx">04</span>
+          <span class="navlink-label">Cursor &amp; Agent</span>
+        </button>
+        <button class="navlink" data-page="activity">
+          <span class="navlink-idx">05</span>
+          <span class="navlink-label">Activity</span>
+        </button>
+        <button class="navlink" data-page="settings">
+          <span class="navlink-idx">06</span>
+          <span class="navlink-label">Settings</span>
+        </button>
+        <button class="navlink" data-page="about">
+          <span class="navlink-idx">07</span>
+          <span class="navlink-label">About</span>
+        </button>
+      </nav>
+      <div class="side-foot">
+        <a href="#" id="oss-badge" class="oss-badge" title="View on GitHub">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38v-1.42c-2.22.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.16-.89-1.16-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.77-.2-3.64-.88-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 014 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.08-1.87 3.75-3.65 3.95.29.25.54.74.54 1.5v2.22c0 .21.15.46.55.38A8 8 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          <span class="oss-text">Open source · MIT</span>
+        </a>
+        <div class="side-tag">[ stdio · mcp ]</div>
       </div>
-      <button id="emergency-stop" class="danger big">EMERGENCY STOP</button>
-      <button id="emergency-resume" class="ghost" style="margin-left:8px">Resume</button>
-    </section>
+    </aside>
 
-    <!-- Permissions -->
-    <section class="page" data-page="permissions">
-      <h2>Permissions</h2>
-      <div class="toggle-row">
-        <label>
-          <input id="bypass-toggle" type="checkbox" />
-          <span>Bypass mode (skip allowlist checks)</span>
-        </label>
-        <span class="hint">When ON, the AI can launch any app without your approval. Use only for autonomous demos.</span>
-      </div>
-      <div class="two-col">
-        <div>
-          <h3>Allowed apps</h3>
-          <ul id="allowed-list" class="app-list"></ul>
-          <form id="allowed-form" class="add-form">
-            <input id="allowed-input" placeholder="e.g. spotify.exe" />
-            <button>Add</button>
-          </form>
+    <main class="content">
+      <!-- ───────────────── Setup ───────────────── -->
+      <section class="page active" data-page="setup">
+        <header class="page-head">
+          <div class="eyebrow"><span class="eyebrow-num">[ 01 ]</span><span>Onboarding</span></div>
+          <h1 class="page-title"><em>Get</em> ready in three steps.</h1>
+          <p class="page-lede">
+            The wizard detects Python, installs the deps, and emits a paste-able MCP config for
+            whichever AI client you use — Claude Code, Codex, OpenCode, all of them.
+          </p>
+        </header>
+
+        <ol class="steplist">
+          <!-- Step 1: Python -->
+          <li class="step">
+            <div class="step-head">
+              <div class="step-no" id="step1-no">01</div>
+              <div class="step-title">
+                <h3>Python <span class="step-sub">3.10 or newer</span></h3>
+                <span class="chip" id="step1-state">checking…</span>
+              </div>
+            </div>
+            <div class="step-body">
+              <dl class="kv-grid">
+                <dt>Interpreter</dt><dd id="python-exe">—</dd>
+                <dt>Version</dt><dd id="python-version">—</dd>
+              </dl>
+              <p class="muted small">Anaconda's Python works. Install from python.org or the Microsoft Store if not detected.</p>
+            </div>
+          </li>
+
+          <!-- Step 2: Deps -->
+          <li class="step">
+            <div class="step-head">
+              <div class="step-no" id="step2-no">02</div>
+              <div class="step-title">
+                <h3>Python dependencies</h3>
+                <span class="chip" id="step2-state">—</span>
+              </div>
+            </div>
+            <div class="step-body">
+              <p class="muted">
+                <code>mcp</code> · <code>pyautogui</code> · <code>mss</code> · <code>pygetwindow</code>
+                · <code>pycaw</code> · <code>winrt-Windows.Media.Ocr</code> · <code>imageio-ffmpeg</code>
+                · <code>keyboard</code> · <code>psutil</code> · <code>pywin32</code>
+              </p>
+              <div class="row">
+                <button class="btn-primary" id="install-deps" disabled>Install dependencies</button>
+                <button class="btn-ghost" id="recheck-deps">Re-check</button>
+              </div>
+              <pre id="install-log" class="install-log"></pre>
+            </div>
+          </li>
+
+          <!-- Step 3: Client -->
+          <li class="step">
+            <div class="step-head">
+              <div class="step-no">03</div>
+              <div class="step-title">
+                <h3>Configure your AI client</h3>
+                <span class="chip chip-muted">pick one or more</span>
+              </div>
+            </div>
+            <div class="step-body">
+              <div class="tabs">
+                <button class="tab active" data-client="claude-code">Claude Code</button>
+                <button class="tab" data-client="claude-desktop">Claude Desktop</button>
+                <button class="tab" data-client="codex">Codex</button>
+                <button class="tab" data-client="opencode">OpenCode</button>
+                <button class="tab" data-client="generic">Generic</button>
+              </div>
+
+              <div class="panel" data-client="claude-code">
+                <p class="muted small">Anthropic's <code>claude</code> CLI. One-click if it's on PATH.</p>
+                <div class="row">
+                  <button class="btn-primary" id="register-claude-code">Register with Claude Code</button>
+                  <span class="muted small" id="claude-cli-status">checking <code>claude</code> CLI…</span>
+                </div>
+                <p class="muted small mt">Or paste into <code id="claude-json-path">~/.claude.json</code> under <code>mcpServers</code>:</p>
+                <pre class="snippet" id="snippet-claude-code"></pre>
+                <button class="copy-btn" data-target="snippet-claude-code">Copy snippet</button>
+              </div>
+
+              <div class="panel hidden" data-client="claude-desktop">
+                <p class="muted small">Paste into <code id="claude-desktop-path">claude_desktop_config.json</code>, then quit and reopen Claude Desktop.</p>
+                <pre class="snippet" id="snippet-claude-desktop"></pre>
+                <div class="row">
+                  <button class="copy-btn" data-target="snippet-claude-desktop">Copy snippet</button>
+                  <button class="btn-ghost" id="open-claude-desktop-config">Open folder</button>
+                </div>
+              </div>
+
+              <div class="panel hidden" data-client="codex">
+                <p class="muted small">OpenAI <code>codex</code> CLI uses TOML at <code id="codex-path">~/.codex/config.toml</code>. Append:</p>
+                <pre class="snippet" id="snippet-codex"></pre>
+                <button class="copy-btn" data-target="snippet-codex">Copy snippet</button>
+              </div>
+
+              <div class="panel hidden" data-client="opencode">
+                <p class="muted small">OpenCode reads <code id="opencode-path">~/.config/opencode/opencode.json</code>. Merge:</p>
+                <pre class="snippet" id="snippet-opencode"></pre>
+                <button class="copy-btn" data-target="snippet-opencode">Copy snippet</button>
+              </div>
+
+              <div class="panel hidden" data-client="generic">
+                <p class="muted small">Standard MCP stdio entry — accepted by most clients.</p>
+                <pre class="snippet" id="snippet-generic"></pre>
+                <button class="copy-btn" data-target="snippet-generic">Copy snippet</button>
+              </div>
+            </div>
+          </li>
+
+          <!-- Optional -->
+          <li class="step step-optional">
+            <div class="step-head">
+              <div class="step-no">★</div>
+              <div class="step-title">
+                <h3>Cursor overlay <span class="step-sub">optional</span></h3>
+                <span class="chip chip-muted">visualise the AI cursor</span>
+              </div>
+            </div>
+            <div class="step-body">
+              <p class="muted small">Launches the labeled arrow overlay so you can see the AI's cursor floating on your screen. Survives MCP server restarts.</p>
+              <div class="row">
+                <button class="btn-primary" id="launch-overlay">Launch cursor overlay</button>
+                <span class="muted small">Or run <code>py -3.12 -m win_computer_use.overlay --standalone</code>.</span>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ───────────────── Status ───────────────── -->
+      <section class="page" data-page="status">
+        <header class="page-head">
+          <div class="eyebrow"><span class="eyebrow-num">[ 02 ]</span><span>Live</span></div>
+          <h1 class="page-title"><em>Now</em> running.</h1>
+        </header>
+        <div class="stat-grid">
+          <article class="stat-card">
+            <div class="stat-label">Server</div>
+            <div class="stat-big" id="server-status-big">—</div>
+            <div class="stat-meta" id="server-heartbeat">awaiting heartbeat</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-label">Bypass mode</div>
+            <div class="stat-big" id="bypass-big">—</div>
+            <div class="stat-meta">if ON, any app can be launched without approval</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-label">Agent</div>
+            <div class="stat-big" id="agent-big">—</div>
+            <div class="stat-meta" id="last-action-meta">no action yet</div>
+          </article>
         </div>
-        <div>
-          <h3>Blocked apps</h3>
-          <ul id="blocked-list" class="app-list"></ul>
-          <form id="blocked-form" class="add-form">
-            <input id="blocked-input" placeholder="e.g. taskmgr.exe" />
-            <button>Add</button>
-          </form>
+        <div class="row mt-lg">
+          <button class="btn-danger btn-big" id="emergency-stop">EMERGENCY STOP</button>
+          <button class="btn-ghost" id="emergency-resume">Resume</button>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Cursor & Agent -->
-    <section class="page" data-page="cursor">
-      <h2>Cursor &amp; Agent</h2>
-      <div class="field">
-        <label>Agent name</label>
-        <input id="agent-input" placeholder="Claude" />
-      </div>
-      <div class="field">
-        <label>Cursor color</label>
-        <input id="color-input" type="color" value="#3B82F6" />
-        <span id="color-hex" class="hint">#3B82F6</span>
-      </div>
-      <div class="toggle-row">
-        <label><input id="overlay-toggle" type="checkbox" /> <span>Labeled-cursor overlay</span></label>
-      </div>
-      <div class="toggle-row">
-        <label><input id="showcase-toggle" type="checkbox" /> <span>Showcase mode (slower motion)</span></label>
-      </div>
-      <div class="field">
-        <label>Mouse move duration (s)</label>
-        <input id="speed-slider" type="range" min="0.05" max="2" step="0.05" />
-        <span id="speed-value" class="hint">0.6 s</span>
-      </div>
-      <div class="toggle-row">
-        <label><input id="autolaunch-toggle" type="checkbox" /> <span>Auto-launch this manager with Windows</span></label>
-        <span class="hint">Starts hidden in the system tray on login.</span>
-      </div>
-    </section>
+      <!-- ───────────────── Permissions ───────────────── -->
+      <section class="page" data-page="permissions">
+        <header class="page-head">
+          <div class="eyebrow"><span class="eyebrow-num">[ 03 ]</span><span>Gatekeeper</span></div>
+          <h1 class="page-title"><em>What</em> the AI may touch.</h1>
+        </header>
+        <div class="row">
+          <label class="switch">
+            <input id="bypass-toggle" type="checkbox" />
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+            <span class="switch-label">Bypass mode (skip allowlist checks)</span>
+          </label>
+        </div>
+        <p class="muted small">Bypass lets the AI launch ANY app without approval. Use only for autonomous demos.</p>
+        <div class="two-col mt">
+          <div>
+            <h3 class="col-head">Allowed apps</h3>
+            <ul id="allowed-list" class="app-list"></ul>
+            <form id="allowed-form" class="add-form">
+              <input id="allowed-input" placeholder="e.g. spotify.exe" />
+              <button class="btn-primary">Add</button>
+            </form>
+          </div>
+          <div>
+            <h3 class="col-head">Blocked apps</h3>
+            <ul id="blocked-list" class="app-list"></ul>
+            <form id="blocked-form" class="add-form">
+              <input id="blocked-input" placeholder="e.g. taskmgr.exe" />
+              <button class="btn-primary">Add</button>
+            </form>
+          </div>
+        </div>
+      </section>
 
-    <!-- Activity -->
-    <section class="page" data-page="activity">
-      <h2>Activity</h2>
-      <div class="activity-toolbar">
-        <input id="activity-search" placeholder="filter by tool name…" />
-        <button id="activity-pause">Pause</button>
-        <button id="activity-clear">Clear view</button>
-      </div>
-      <div id="activity-list" class="activity-list"></div>
-    </section>
+      <!-- ───────────────── Cursor & Agent ───────────────── -->
+      <section class="page" data-page="cursor">
+        <header class="page-head">
+          <div class="eyebrow"><span class="eyebrow-num">[ 04 ]</span><span>Visualise</span></div>
+          <h1 class="page-title"><em>The</em> AI cursor.</h1>
+        </header>
+        <div class="form-grid">
+          <div class="field">
+            <label>Agent name</label>
+            <input id="agent-input" placeholder="Claude" />
+          </div>
+          <div class="field">
+            <label>Cursor color</label>
+            <div class="row">
+              <input id="color-input" type="color" value="#FE6E58" />
+              <span class="muted small" id="color-hex">#FE6E58</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="switch">
+              <input id="overlay-toggle" type="checkbox" />
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+              <span class="switch-label">Labeled-cursor overlay</span>
+            </label>
+          </div>
+          <div class="field">
+            <label class="switch">
+              <input id="showcase-toggle" type="checkbox" />
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+              <span class="switch-label">Showcase mode (slower motion)</span>
+            </label>
+          </div>
+          <div class="field full">
+            <label>Mouse move duration <span class="muted small" id="speed-value">0.6 s</span></label>
+            <input id="speed-slider" type="range" min="0.05" max="2" step="0.05" />
+          </div>
+          <div class="field full">
+            <label>Auto-hide cursor after <span class="muted small" id="autohide-value">5 s</span></label>
+            <input id="autohide-slider" type="range" min="0" max="30" step="1" />
+            <p class="muted small">0 = never hide. The arrow fades when the AI cursor has been still that long.</p>
+          </div>
+        </div>
+      </section>
 
-    <!-- About -->
-    <section class="page" data-page="about">
-      <h2>About</h2>
-      <p>Win:Computer Use — Manager v0.2.0</p>
-      <p>Manages permissions, cursor overlay, and activity for the <code>win-computer-use</code> MCP server.</p>
-      <p>Config: <code id="config-path"></code> <button class="ghost" id="open-config">Open folder</button></p>
-      <p>Source: <a href="#" id="github-link">github.com/JNX03/win-computer-use</a></p>
-    </section>
-  </main>
+      <!-- ───────────────── Activity ───────────────── -->
+      <section class="page" data-page="activity">
+        <header class="page-head">
+          <div class="eyebrow"><span class="eyebrow-num">[ 05 ]</span><span>Replay</span></div>
+          <h1 class="page-title"><em>Every</em> tool call.</h1>
+        </header>
+        <div class="activity-toolbar">
+          <input id="activity-search" placeholder="filter by tool name…" />
+          <button class="btn-ghost" id="activity-pause">Pause</button>
+          <button class="btn-ghost" id="activity-clear">Clear view</button>
+        </div>
+        <div id="activity-list" class="activity-list"></div>
+      </section>
+
+      <!-- ───────────────── Settings ───────────────── -->
+      <section class="page" data-page="settings">
+        <header class="page-head">
+          <div class="eyebrow"><span class="eyebrow-num">[ 06 ]</span><span>Preferences</span></div>
+          <h1 class="page-title"><em>The</em> app itself.</h1>
+        </header>
+
+        <div class="form-grid">
+          <div class="field full">
+            <label>Theme</label>
+            <div class="segmented" id="theme-segmented">
+              <button data-theme="light">Light</button>
+              <button data-theme="dark" class="active">Dark</button>
+              <button data-theme="system">Match system</button>
+            </div>
+          </div>
+          <div class="field full">
+            <label>Default page on launch</label>
+            <select id="default-page-select">
+              <option value="setup">Setup</option>
+              <option value="status">Status</option>
+              <option value="permissions">Permissions</option>
+              <option value="cursor">Cursor &amp; Agent</option>
+              <option value="activity">Activity</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label class="switch">
+              <input id="autolaunch-toggle" type="checkbox" />
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+              <span class="switch-label">Auto-launch this manager with Windows</span>
+            </label>
+            <p class="muted small">Starts hidden in the system tray on login.</p>
+          </div>
+          <div class="field full">
+            <label>Emergency stop hotkey</label>
+            <div class="row">
+              <kbd>Ctrl</kbd><span class="muted">+</span><kbd>Shift</kbd><span class="muted">+</span><kbd>X</kbd>
+              <span class="muted small">global · uses Win32 RegisterHotKey</span>
+            </div>
+          </div>
+          <div class="field full">
+            <label>Danger zone</label>
+            <button class="btn-danger btn-small" id="reset-defaults">Reset all settings to defaults</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────── About ───────────────── -->
+      <section class="page" data-page="about">
+        <header class="page-head">
+          <div class="eyebrow"><span class="eyebrow-num">[ 07 ]</span><span>Colophon</span></div>
+          <h1 class="page-title"><em>win-</em>computer-use.</h1>
+          <p class="page-lede">
+            An MCP server that gives Claude (or any MCP-capable AI) human-like control of a Windows
+            machine — independent cursor, OCR, recording, the works.
+          </p>
+        </header>
+        <div class="about-grid">
+          <a href="#" class="about-card" id="github-link">
+            <div class="about-card-tag">Source</div>
+            <div class="about-card-body">
+              <svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true">
+                <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38v-1.42c-2.22.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.16-.89-1.16-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.23 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.77-.2-3.64-.88-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 014 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.08-1.87 3.75-3.65 3.95.29.25.54.74.54 1.5v2.22c0 .21.15.46.55.38A8 8 0 0016 8c0-4.42-3.58-8-8-8z"/>
+              </svg>
+              <span>github.com/JNX03/win-computer-use</span>
+            </div>
+          </a>
+          <div class="about-card">
+            <div class="about-card-tag">License</div>
+            <div class="about-card-body">MIT</div>
+          </div>
+          <div class="about-card">
+            <div class="about-card-tag">Version</div>
+            <div class="about-card-body">0.3.0 · Phase 4</div>
+          </div>
+          <a href="#" class="about-card" id="open-config">
+            <div class="about-card-tag">Config folder</div>
+            <div class="about-card-body" id="config-path-disp">~/.win_computer_use</div>
+          </a>
+        </div>
+
+        <p class="muted small mt-lg">
+          Built with care · Python · Electron · ctypes · MCP. Pull requests welcome.
+        </p>
+      </section>
+    </main>
+  </div>
 
   <script src="app.js"></script>
 </body>
