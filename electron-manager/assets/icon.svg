@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#111E36"/>
+      <stop offset="1" stop-color="#0B1220"/>
+    </linearGradient>
+    <linearGradient id="arrowGrad" x1="140" y1="110" x2="280" y2="398" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7CB3FF"/>
+      <stop offset="0.55" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.42" cy="0.38" r="0.7">
+      <stop offset="0" stop-color="#1E3A8A" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#1E3A8A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background rounded square (matches manager window #0F172A family) -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#glow)"/>
+  <rect x="4" y="4" width="504" height="504" rx="108" ry="108" fill="none" stroke="#1E293B" stroke-width="2"/>
+
+  <!-- White halo around the cursor for legibility on dark bg -->
+  <polygon points="140,110 140,350 204,302 244,398 292,374 244,286 332,286"
+           fill="#FFFFFF" stroke="#FFFFFF" stroke-width="22"
+           stroke-linejoin="round" stroke-linecap="round" opacity="0.92"/>
+
+  <!-- Cursor arrow: same 7-vertex polygon as the on-screen overlay -->
+  <polygon points="140,110 140,350 204,302 244,398 292,374 244,286 332,286"
+           fill="url(#arrowGrad)" stroke="#0F172A" stroke-width="6"
+           stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- Subtle inner highlight along the leading edge of the arrow -->
+  <polyline points="140,110 140,350" fill="none" stroke="#BFDBFE"
+            stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- "AI" label chip — mirrors the agent-name pill drawn beside the live
+       cursor in win_computer_use/overlay.py. Anchored to the lower-right of
+       the arrow so it reads like a labeled agent cursor. -->
+  <g>
+    <!-- Chip halo for legibility on the dark background -->
+    <rect x="294" y="372" width="178" height="92" rx="46" ry="46"
+          fill="#FFFFFF" opacity="0.18"/>
+    <!-- Chip body -->
+    <rect x="300" y="378" width="166" height="80" rx="40" ry="40"
+          fill="url(#arrowGrad)" stroke="#0F172A" stroke-width="4"/>
+    <!-- Inner top highlight -->
+    <rect x="312" y="386" width="142" height="20" rx="10" ry="10"
+          fill="#BFDBFE" opacity="0.35"/>
+    <!-- "AI" label -->
+    <text x="383" y="434" text-anchor="middle"
+          font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+          font-size="50" font-weight="700" letter-spacing="2"
+          fill="#FFFFFF">AI</text>
+  </g>
+</svg>

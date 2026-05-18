@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "start:hidden": "electron . --hidden"
+    "start:hidden": "electron . --hidden",
+    "build:icon": "node scripts/build-icon.js"
   },
   "author": "JNX03",
   "license": "MIT",
@@ -22,6 +23,8 @@
     "electron"
   ],
   "devDependencies": {
-    "electron": "^30.0.0"
+    "electron": "^30.0.0",
+    "png-to-ico": "^2.1.8",
+    "sharp": "^0.33.5"
   }
 }

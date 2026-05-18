@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#111E36"/>
+      <stop offset="1" stop-color="#0B1220"/>
+    </linearGradient>
+    <linearGradient id="arrowGrad" x1="80" y1="60" x2="380" y2="470" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7CB3FF"/>
+      <stop offset="0.55" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Same dark bg as the main icon -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bgGrad)"/>
+  <rect x="4" y="4" width="504" height="504" rx="108" ry="108"
+        fill="none" stroke="#1E293B" stroke-width="2"/>
+
+  <!-- Cursor arrow, scaled to fill the tile (no label chip — illegible at 16px).
+       Same 7-vertex polygon as overlay.py:45-53. Tip at (80,60); scale ~11x. -->
+  <polygon points="80,60 80,390 168,324 224,456 290,423 224,302 344,302"
+           fill="#FFFFFF" stroke="#FFFFFF" stroke-width="34"
+           stroke-linejoin="round" stroke-linecap="round" opacity="0.92"/>
+  <polygon points="80,60 80,390 168,324 224,456 290,423 224,302 344,302"
+           fill="url(#arrowGrad)" stroke="#0F172A" stroke-width="10"
+           stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

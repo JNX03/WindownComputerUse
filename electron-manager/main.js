@@ -59,6 +59,15 @@ function writeJsonAtomic(p, obj) {
 }
 
 // ----- window ---------------------------------------------------------------
+function appIconPath() {
+  const dir = path.join(__dirname, 'assets');
+  const win = path.join(dir, 'icon.ico');
+  const png = path.join(dir, 'icon-256.png');
+  if (process.platform === 'win32' && fs.existsSync(win)) return win;
+  if (fs.existsSync(png)) return png;
+  return undefined;
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 920,
@@ -68,6 +77,7 @@ function createWindow() {
     show: !STARTED_HIDDEN,
     title: 'Win:Computer Use — Manager',
     backgroundColor: '#0F172A',
+    icon: appIconPath(),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
